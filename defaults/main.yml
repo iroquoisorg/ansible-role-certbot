@@ -1,0 +1,8 @@
+certbot_email: "john_doe@example.com"
+certbot_root: /var/www/html
+certbot_domains: []
+certbot_set_cron: false
+certbot_link: false
+certbot_regenerate_hour: 0
+certbot_regenerate_minute: 0
+certbot_regenerate_day_of_month: 1

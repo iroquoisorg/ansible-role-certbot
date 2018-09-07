@@ -1,0 +1,16 @@
+---
+- name: Add certbot repo
+  apt_repository:
+    repo: ppa:certbot/certbot
+    state: present
+    update_cache: yes
+
+- name: Install certbot
+  apt:
+    package: certbot
+    state: latest
+
+- include_tasks: generate_cert.yml
+  with_items: "{{ certbot_domains }}"
+  loop_control:
+    loop_var: certbot_domain

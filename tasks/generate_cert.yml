@@ -1,0 +1,61 @@
+---
+- name: Make sure web root exists
+  file:
+    path: "{{ certbot_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: 0755
+
+- name: Generate certificate
+  shell: "certbot certonly --non-interactive --agree-tos --email {{ certbot_email }} --webroot -w {{ certbot_root }} -d {{ certbot_domain }}"
+
+- name: Fix permissions for certs
+  file:
+    path: "/etc/letsencrypt/{{ item }}"
+    group: www-data
+    mode: g+rx
+  with_items:
+    - archive
+    - live
+
+- name: Remove old certs
+  file:
+    path: "/etc/ssl/{{ certbot_domain }}.{{ item }}"
+    state: absent
+  with_items:
+    - 'pem'
+    - 'key'
+  when: certbot_link|bool == true
+
+- name: Link certs
+  file:
+    src: "/etc/letsencrypt/live/{{ certbot_domain }}/{{ item.src }}"
+    dest: "/etc/ssl/{{ certbot_domain }}.{{ item.dest }}"
+    state: link
+  with_items:
+    - { src: 'fullchain.pem', dest: 'pem' }
+    - { src: 'privkey.pem', dest: 'key' }
+  when: certbot_link|bool == true
+
+- name: Configure web directory permissions
+  file:
+    path: "{{ certbot_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: true
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
+
+- name: Install cron
+  cron:
+    name: regenerate ssl cert
+    hour: "{{ certbot_regenerate_hour }}"
+    minute: "{{ certbot_regenerate_minute }}"
+    day: "{{ certbot_regenerate_day_of_month }}"
+    job: "certbot certonly --non-interactive --agree-tos --email {{ certbot_email }} --webroot -w {{ certbot_root }} -d {{ certbot_domain }}"
+  when: certbot_set_cron|bool == true
