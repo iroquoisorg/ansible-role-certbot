@@ -1,5 +1,11 @@
 ---
 - hosts: localhost
   remote_user: root
+  vars:
+    certbot_ci_build: true
+    certbot_domains:
+      - example.com
+    certbot_set_cron: true
+    certbot_link: true
   roles:
     - ansible-role-certbot

@@ -3,21 +3,30 @@
   file:
     path: "{{ certbot_root }}"
     state: directory
-    owner: www-data
-    group: www-data
+    owner: "{{ certbot_www_user }}"
+    group: "{{ certbot_www_group }}"
     mode: 0755
 
 - name: Generate certificate
   shell: "certbot certonly --non-interactive --agree-tos --email {{ certbot_email }} --webroot -w {{ certbot_root }} -d {{ certbot_domain }}"
+  when: certbot_ci_build == false
 
-- name: Fix permissions for certs
+- name: Prepare certs dirs
   file:
     path: "/etc/letsencrypt/{{ item }}"
-    group: www-data
+    owner: "{{ certbot_www_user }}"
+    group: "{{ certbot_www_group }}"
+    state: directory
     mode: g+rx
   with_items:
     - archive
     - live
+
+- name: Check if old certs exist
+  stat:
+    path: "/etc/ssl/{{ certbot_domain }}.pem"
+  register: certbot_old_cert
+  changed_when: false
 
 - name: Remove old certs
   file:
@@ -26,7 +35,23 @@
   with_items:
     - 'pem'
     - 'key'
-  when: certbot_link|bool == true
+  when: certbot_link|bool == true and (certbot_old_cert.stat.exists and certbot_old_cert.stat.islnk == False)
+
+- name: Make sure cert directory exists
+  file:
+    path: "/etc/letsencrypt/live/{{ certbot_domain }}"
+    state: directory
+  when: certbot_ci_build == true
+
+- name: Make sure cert files exist
+  file:
+    path: "/etc/letsencrypt/live/{{ certbot_domain }}/{{ item.src }}"
+    state: touch
+  with_items:
+    - { src: 'fullchain.pem' }
+    - { src: 'privkey.pem' }
+  when: certbot_ci_build == true
+  changed_when: false
 
 - name: Link certs
   file:
@@ -46,10 +71,11 @@
     group: www-data
     recurse: true
 
-- name: Restart nginx
+- name: Restart http server
   service:
-    name: nginx
+    name: "{{ certbot_http_service }}"
     state: restarted
+  when: certbot_http_service != false
 
 - name: Install cron
   cron:
