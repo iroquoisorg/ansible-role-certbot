@@ -71,12 +71,6 @@
     group: www-data
     recurse: true
 
-- name: Restart http server
-  service:
-    name: "{{ certbot_http_service }}"
-    state: restarted
-  when: certbot_http_service != false
-
 - name: Install cron
   cron:
     name: regenerate ssl cert
