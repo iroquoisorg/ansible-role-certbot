@@ -6,3 +6,6 @@ certbot_link: false
 certbot_regenerate_hour: 0
 certbot_regenerate_minute: 0
 certbot_regenerate_day_of_month: 1
+certbot_ci_build: false
+certbot_www_user : www-data
+certbot_www_group : www-data

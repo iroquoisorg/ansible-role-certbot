@@ -31,3 +31,23 @@ script:
     | grep -q 'changed=0.*failed=0'
     && (echo 'Idempotence test: pass' && exit 0)
     || (echo 'Idempotence test: fail' && cat /tmp/idempotency-test-log && exit 1)
+
+  - >
+    dpkg -l certbot | grep -q '^ii'
+    && (echo 'certbot installed' && exit 0)
+    || (echo 'certbot not installed' && exit 1)
+
+  - >
+    sudo crontab -l | grep -q "regenerate ssl cert"
+    && (echo 'Crontab installed' && exit 0)
+    || (echo 'Crontab not installed' && exit 1)
+
+  - >
+    test -L /etc/ssl/example.com.pem
+    && (echo 'Cert chain installed' && exit 0)
+    || (echo 'Cert chain not installed' && exit 1)
+
+  - >
+    test -L /etc/ssl/example.com.key
+    && (echo 'Priv key installed' && exit 0)
+    || (echo 'Priv key not installed' && exit 1)
