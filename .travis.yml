@@ -51,3 +51,5 @@ script:
     test -L /etc/ssl/example.com.key
     && (echo 'Priv key installed' && exit 0)
     || (echo 'Priv key not installed' && exit 1)
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/
