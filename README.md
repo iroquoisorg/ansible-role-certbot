@@ -1,6 +1,6 @@
 # certbot
 
-[![Build Status](https://travis-ci.com/iroquoisorg/ansible-role-certbot.svg?branch=master)](https://travis-ci.com/iroquoisorg/ansible-role-memcached)
+[![Build Status](https://travis-ci.com/iroquoisorg/ansible-role-certbot.svg?branch=master)](https://travis-ci.com/iroquoisorg/ansible-role-certbot)
 
 Ansible role for certbot
 
@@ -26,3 +26,7 @@ certbot_www_user : www-data
 certbot_www_group : www-data
 
 ```
+
+# Development
+
+Please check [development guide](DEVELOPMENT.md) for details about developing and testing this role.
